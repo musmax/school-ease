@@ -80,10 +80,15 @@ const createSchool = async (schoolBody, createdBy) => {
   return School.create({ ...schoolBody, createdBy });
 };
 
+const viewMySchools = async (createdBy) => {
+  return School.findAll({ where: { createdBy } });
+};
+
 module.exports = {
   getAllSchools,
   getSchoolById,
   updateSchoolById,
   deleteSchoolById,
   createSchool,
+  viewMySchools,
 };

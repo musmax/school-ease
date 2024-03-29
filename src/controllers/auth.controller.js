@@ -79,8 +79,8 @@ const forgotPassword = catchAsync(async (req, res) => {
 });
 
 const resetPassword = catchAsync(async (req, res) => {
-  await authService.resetPassword(req.query.token, req.body.password);
-  res.status(httpStatus.NO_CONTENT).send();
+  const data = await authService.resetPassword(req.query.token, req.body.password);
+  res.status(httpStatus.NO_CONTENT).send({ data });
 });
 
 const sendVerificationEmail = catchAsync(async (req, res) => {
@@ -92,8 +92,8 @@ const sendVerificationEmail = catchAsync(async (req, res) => {
 });
 
 const verifyEmail = catchAsync(async (req, res) => {
-  await authService.verifyEmail(req.query.token);
-  res.status(httpStatus.NO_CONTENT).send();
+  const data = await authService.verifyEmail(req.query.token);
+  res.status(httpStatus.NO_CONTENT).send({ data });
 });
 
 const createManyStudents = catchAsync(async (req, res) => {

@@ -11,8 +11,7 @@ const ApiError = require('./ApiError');
  */
 const handleFileColumnValidation = async (fileRows) => {
   const row = [
-    'role',
-    'password',
+    // 'password',
     'school_id',
     'class_id',
     'firstname',

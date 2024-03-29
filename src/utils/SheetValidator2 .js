@@ -10,17 +10,7 @@ const ApiError = require('./ApiError');
  * @returns {Promise<Array>} column order
  */
 const handleFileColumnValidation = async (fileRows) => {
-  const row = [
-    'role',
-    'password',
-    'school_id',
-    'firstname',
-    'lastname',
-    'othername',
-    'staff_email',
-    'phone_number',
-    'position',
-  ];
+  const row = ['school_id', 'firstname', 'lastname', 'othername', 'staff_email', 'phone_number', 'position'];
   const fileHeader = fileRows.map((column) => column.toLowerCase().trim());
 
   row.forEach((column) => {

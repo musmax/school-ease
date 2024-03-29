@@ -10,6 +10,7 @@ const { SchoolStudents } = require('./school_students.model');
 const { SchoolClass } = require('./class.model');
 const { ClassUser } = require('./class_user.model');
 const { SchoolEmployee } = require('./school_employee.model');
+const { ClassAttendance } = require('./attendance.model');
 
 exports.association = () => {
   // User - Token
@@ -65,4 +66,16 @@ exports.association = () => {
   // School - SchoolEmployee
   User.belongsToMany(School, { through: SchoolEmployee, foreignKey: 'employeeId', as: 'school_employees' });
   School.belongsToMany(User, { through: SchoolEmployee, foreignKey: 'school_id', as: 'school_employees' });
+
+  User.hasMany(ClassAttendance, { foreignKey: 'studentId', as: 'student_attendance' });
+  ClassAttendance.belongsTo(User, { foreignKey: 'studentId', as: 'student_attendance' });
+
+  User.hasMany(ClassAttendance, { foreignKey: 'teacherId', as: 'class_teacher_attendance' });
+  ClassAttendance.belongsTo(User, { foreignKey: 'teacherId', as: 'class_teacher_attendance' });
+
+  SchoolClass.hasMany(ClassAttendance, { foreignKey: 'classId', as: 'attendance_class' });
+  ClassAttendance.belongsTo(SchoolClass, { foreignKey: 'classId', as: 'attendance_class' });
+
+  User.hasMany(ClassAttendance, { foreignKey: 'standInMarker', as: 'stand_in_marker' });
+  ClassAttendance.belongsTo(User, { foreignKey: 'standInMarker', as: 'stand_in_marker' });
 };

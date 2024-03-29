@@ -93,8 +93,8 @@ module.exports = router;
  *                   numberOfEmployee:
  *                     type: string
  *             example:
- *               firstName: fake name
- *               lastName: fake name
+ *               firstname: fake name
+ *               lastname: fake name
  *               username: fakeUsername
  *               email: admin@example.com
  *               position: founder

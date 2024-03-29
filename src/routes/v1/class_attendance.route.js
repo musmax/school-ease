@@ -1,39 +1,40 @@
 const express = require('express');
 const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
-const { schoolValidation } = require('../../validations');
-const { schoolController } = require('../../controllers');
+const { classAttendanceValidation } = require('../../validations');
+const { classAttendanceController } = require('../../controllers');
 
 const router = express.Router();
 
 router
   .route('/')
-  .get(auth('schools.view'), schoolController.getSchools)
-  .post(auth('schools.manage'), validate(schoolValidation.createSchool), schoolController.createSchool);
-router.route('/me').get(auth(), schoolController.getSchools);
+  // .get(auth('classAttendances.view'), classAttendanceController.getclassAttendances)
+  .post(auth(), validate(classAttendanceValidation.markAttendance), classAttendanceController.markAttendance);
 
-router
-  .route('/:id')
-  .get(validate(schoolValidation.getSchool), auth('schools.view'), schoolController.getSchoolById)
-  .patch(validate(schoolValidation.updateSchool), auth('schools.manage'), schoolController.updateSchoolById)
-  .delete(validate(schoolValidation.deleteSchool), auth('schools.manage'), schoolController.deleteSchoolById);
+// router
+//   .route('/:id')
+//   .get(
+//     validate(classAttendanceValidation.getclassAttendance),
+//     auth('classAttendances.view'),
+//     classAttendanceController.getclassAttendanceById
+//   );
 
 module.exports = router;
 
 /**
  * @swagger
  * tags:
- *   name: Schools
- *   description: school management and retrieval
+ *   name: Class-Attendance
+ *   description: Class-Attendance management and retrieval
  */
 
 /**
  * @swagger
- * /schools:
+ * /class-attendance:
  *   get:
- *     summary: Get all schools
- *     description: Only admins can retrieve all schools.
- *     tags: [Schools]
+ *     summary: Get all Class-Attendances
+ *     description: Only admins can retrieve all Class-Attendances.
+ *     tags: [Class-Attendance]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -41,7 +42,7 @@ module.exports = router;
  *        name: name
  *        schema:
  *          type: string
- *          description: school name
+ *          description: Class-Attendance name
  *     responses:
  *       "200":
  *         description: OK
@@ -53,16 +54,16 @@ module.exports = router;
  *                 results:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/SchoolList'
+ *                     $ref: '#/components/schemas/Class-AttendanceList'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":
  *         $ref: '#/components/responses/Forbidden'
  *
  *   post:
- *     summary: Create another school
- *     description: Only school administrator can create a school.
- *     tags: [Schools]
+ *     summary: Mark attendance for your class
+ *     description: Only allowed user can perform this action
+ *     tags: [Class-Attendance]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -70,7 +71,7 @@ module.exports = router;
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/School'
+ *             $ref: '#/components/schemas/ClassAttendance'
  *     responses:
  *       "200":
  *         description: OK
@@ -86,16 +87,16 @@ module.exports = router;
  *                   type: string
  *                   example: cities created successfully
  *                 data:
- *                   $ref: '#/components/schemas/School'
+ *                   $ref: '#/components/schemas/ClassAttendance'
  */
 
 /**
  * @swagger
- * /schools/me:
+ * /Class-Attendance/me:
  *   get:
- *     summary: Get all my schools
- *     description: Only admins can retrieve all schools.
- *     tags: [Schools]
+ *     summary: Get all my Class-Attendances
+ *     description: Only admins can retrieve all Class-Attendances.
+ *     tags: [Class-Attendance]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -103,7 +104,7 @@ module.exports = router;
  *        name: name
  *        schema:
  *          type: string
- *          description: school name
+ *          description: Class-Attendance name
  *     responses:
  *       "200":
  *         description: OK
@@ -115,7 +116,7 @@ module.exports = router;
  *                 results:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/SchoolList'
+ *                     $ref: '#/components/schemas/Class-AttendanceList'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":
@@ -124,11 +125,11 @@ module.exports = router;
 
 /**
  * @swagger
- * /schools/{id}:
+ * /Class-Attendance/{id}:
  *   get:
- *     summary: Get a school
- *     description: Get a school by ID.
- *     tags: [Schools]
+ *     summary: Get a Class-Attendance
+ *     description: Get a Class-Attendance by ID.
+ *     tags: [Class-Attendance]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -137,7 +138,7 @@ module.exports = router;
  *         required: true
  *         schema:
  *           type: number
- *         description: school id
+ *         description: Class-Attendance id
  *     responses:
  *       "200":
  *         description: OK
@@ -153,12 +154,12 @@ module.exports = router;
  *                   type: string
  *                   example: Country fetched successfully
  *                 data:
- *                   $ref: '#/components/schemas/SchoolList'
+ *                   $ref: '#/components/schemas/Class-AttendanceList'
  *
  *   patch:
- *     summary: Update a school
- *     description: Only admins can update schools.
- *     tags: [Schools]
+ *     summary: Update a Class-Attendance
+ *     description: Only admins can update Class-Attendances.
+ *     tags: [Class-Attendance]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -167,13 +168,13 @@ module.exports = router;
  *         required: true
  *         schema:
  *           type: number
- *         description: school id
+ *         description: Class-Attendance id
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/School'
+ *             $ref: '#/components/schemas/Class-Attendance'
  *             example:
  *               name: lastName
  *     responses:
@@ -182,7 +183,7 @@ module.exports = router;
  *         content:
  *           application/json:
  *             schema:
- *                $ref: '#/components/schemas/School'
+ *                $ref: '#/components/schemas/Class-Attendance'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":
@@ -191,9 +192,9 @@ module.exports = router;
  *         $ref: '#/components/responses/NotFound'
  *
  *   delete:
- *     summary: Delete a school
- *     description: Only admins can delete schools.
- *     tags: [Schools]
+ *     summary: Delete a Class-Attendance
+ *     description: Only admins can delete Class-Attendances.
+ *     tags: [Class-Attendance]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -202,7 +203,7 @@ module.exports = router;
  *         required: true
  *         schema:
  *           type: number
- *         description: school id
+ *         description: Class-Attendance id
  *     responses:
  *       "204":
  *         description: No content

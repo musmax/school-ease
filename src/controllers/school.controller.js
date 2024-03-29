@@ -30,6 +30,14 @@ const updateSchoolById = catchAsync(async (req, res) => {
   const School = await schoolService.updateSchoolById(req.params.id, req.body);
   res.status(httpStatus.OK).send(School);
 });
+const viewMySchools = catchAsync(async (req, res) => {
+  const School = await schoolService.viewMySchools(req.user.id);
+  res.status(httpStatus.OK).send({
+    status: 200,
+    message: 'Schools fetched successfully',
+    data: School,
+  });
+});
 
 const deleteSchoolById = catchAsync(async (req, res) => {
   await schoolService.deleteSchoolById(req.params.id);
@@ -42,4 +50,5 @@ module.exports = {
   updateSchoolById,
   deleteSchoolById,
   createSchool,
+  viewMySchools,
 };

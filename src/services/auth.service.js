@@ -75,6 +75,10 @@ const resetPassword = async (resetPasswordToken, newPassword) => {
     }
     await userService.updateUserById(user.id, { password: newPassword });
     await Token.destroy({ where: { userId: user.id, type: tokenTypes.RESET_PASSWORD } });
+    return {
+      status: 200,
+      message: 'Password reset successful',
+    };
   } catch (error) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Password reset failed');
   }
@@ -95,6 +99,9 @@ const verifyEmail = async (verifyEmailToken) => {
     await Token.destroy({ where: { userId: user.id, type: tokenTypes.VERIFY_EMAIL } });
     await userService.updateUserById(user.id, { isEmailVerified: true });
     await userService.sendUserWelcomeEmail(user);
+    return {
+      message: 'Email verification successful',
+    };
   } catch (error) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Email verification failed');
   }

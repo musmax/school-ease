@@ -29,10 +29,10 @@ components:
       example:
         id: 5ebac534954b54139806c112
         email: admin@example.com
-        firstName: John
-        lastName: Doe
+        firstname: John
+        lastname: Doe
         username: johndoe
-        phoneNumber: '12345678'
+        phoneNumbers: '12345678'
         profileImage: http://profileimage.jpg
         language: English
         countryId: 234
@@ -159,7 +159,7 @@ components:
         value: users.manage
         groupName: Users Permission
         description: Permission to create, delete and modify users
-    
+
     Class:
       type: object
       properties:
@@ -173,7 +173,7 @@ components:
       example:
         schoolId: 1
         name: SS1A1
-        description: This class is  for students in the Science Stream, Year 1 
+        description: This class is  for students in the Science Stream, Year 1
     UpdateClass:
       type: object
       properties:
@@ -186,8 +186,8 @@ components:
           type: number
       example:
         name: SS1c1
-        description: This class is  for students in the Science Stream, Year 1 
-    
+        description: This class is  for students in the Science Stream, Year 1
+
     AssignTeacher:
       type: object
       properties:
@@ -198,7 +198,7 @@ components:
           type: string
       example:
         classId: 1
-        teacherId: 1  
+        teacherId: 1
 
     AssignStudent:
       type: object
@@ -210,7 +210,7 @@ components:
           type: string
       example:
         classId: 1
-        studentId: 1  
+        studentId: 1
 
     ReAssignStudent:
       type: object
@@ -222,8 +222,8 @@ components:
           type: string
       example:
         oldClassId: 1
-        newClassId: 1  
-        studentId: 1  
+        newClassId: 1
+        studentId: 1
 
     ReAssignTeacher:
       type: object
@@ -235,8 +235,8 @@ components:
           type: string
       example:
         oldClassId: 1
-        newClassId: 1  
-        teacherId: 1  
+        newClassId: 1
+        teacherId: 1
 
     MakeCaptain:
       type: object
@@ -248,7 +248,43 @@ components:
           type: string
       example:
         classId: 1
-        classCaptainId: 1  
+        classCaptainId: 1
+
+    ClassAttendance:
+      type: object
+      properties:
+        dateOfMarking:
+          type: string
+          format: date-time
+          required: true
+        classId:
+          type: number
+          required: true
+        teacherId:
+          type: number
+          required: true
+        standInMarker:
+          type: number
+          required: false
+        studentRecords:
+          type: array
+          items:
+            type: object
+            properties:
+              studentId:
+                type: number
+              isPresent:
+                type: boolean
+      example:
+        dateOfMarking: '2024-03-19T12:15:08'
+        classId: 1
+        teacherId: 1
+        standInMarker: 1
+        studentRecords:
+          - studentId: 1
+            isPresent: false
+          - studentId: 2
+            isPresent: true
 
 
     TestInvitation:
@@ -326,23 +362,11 @@ components:
         schoolLogo: 'https://i.stack.imgur.com/xHwwG.png?s=46a35'
         numberOfBranches: 10
         accredited: false
-        description: "This is a public high school in Lagos State."
-        officialHandles: [
-          "https:facebook.com/BHSL",
-          "https:twitter.com/BHSL",
-          "https:instagram.com/BHSL",
-          "https:youtube.com/BHSL",
-        ]
-        schoolWebsites: [
-          "https:BHSL/opebis",
-          "https:twitter.com/BHSL",
-        ]
-        schoolPhoneNumbers: [
-          "+23409087654321",
-          "+23409087604321",
-          "+234090876544321",
-          "+234090814654321",
-        ]
+        description: 'This is a public high school in Lagos State.'
+        officialHandles:
+          ['https:facebook.com/BHSL', 'https:twitter.com/BHSL', 'https:instagram.com/BHSL', 'https:youtube.com/BHSL']
+        schoolWebsites: ['https:BHSL/opebis', 'https:twitter.com/BHSL']
+        schoolPhoneNumbers: ['+23409087654321', '+23409087604321', '+234090876544321', '+234090814654321']
 
     SchoolList:
       type: array

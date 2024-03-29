@@ -7,3 +7,4 @@ module.exports.permissionValidation = require('./permission.validation');
 module.exports.countryValidation = require('./country.validation');
 module.exports.schoolValidation = require('./school.validation');
 module.exports.classValidation = require('./class.validation');
+module.exports.classAttendanceValidation = require('./class_attendance.validation');

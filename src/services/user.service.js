@@ -5,7 +5,7 @@ const { Op } = require('sequelize');
 const ApiError = require('../utils/ApiError');
 const { User } = require('../models/user.model');
 const { School } = require('../models/school.model');
-const { SchoolEmployee } = require('../models/school_employee.model');
+// const { SchoolEmployee } = require('../models/school_employee.model');
 const { Role } = require('../models/role.model');
 const { Permission } = require('../models/permission.model');
 const logger = require('../config/logger');
@@ -65,6 +65,26 @@ const getUserById = async (id) => {
   return User.findByPk(id, {
     include: [
       {
+        association: 'class_students',
+        attributes: ['id'],
+        include: [
+          {
+            association: 'class_users',
+            attributes: ['name'],
+          },
+        ],
+      },
+      {
+        association: 'class_teachers',
+        attributes: ['id'],
+        include: [
+          {
+            association: 'class_users',
+            attributes: ['name'],
+          },
+        ],
+      },
+      {
         model: Role,
         as: 'roles',
         attributes: ['name'],
@@ -110,17 +130,14 @@ const sendUserWelcomeEmail = async (user) => {
 const createUser = async (userBody) => {
   // console.log(userBody);
   const { userType, role, schoolObject, ...userProfile } = userBody;
-
   // Check if email is taken
   if (await isEmailTaken(userProfile.email)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
-
   // Check if username is taken
   if (await isUsernameTaken(userProfile.username)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Username already taken');
   }
-
   // Get the user role
   const foundRole = await Role.findAll({
     where: {
@@ -135,7 +152,7 @@ const createUser = async (userBody) => {
   if (schoolObject) {
     const school = await School.create({ ...schoolObject, createdBy: user.id });
     // make the principal employee of his own company
-    await SchoolEmployee.create({ schoolId: school.id, employeeId: user.id, position: user.position });
+    await user.setSchool_employees(school.id);
   }
   // Return user object with role
   return getUserById(user.id);
@@ -158,6 +175,7 @@ const generateUniqueEmail = (firstname, lastname, othername) => {
 const studentRegistration = async (userBody) => {
   // eslint-disable-next-line camelcase
   const { userType, role, class_id, school_id, ...userProfile } = userBody;
+  const defaultPassword = 'password';
   await getSchoolById(school_id); // Check that the school exists
   await getClasseById(class_id); // Check
   const email = generateUniqueEmail(userBody.firstname, userBody.lastname, userBody.otherName);
@@ -173,31 +191,32 @@ const studentRegistration = async (userBody) => {
   }
 
   // Get the user role
-  const foundRole = await Role.findAll({
-    where: {
-      id: role,
-    },
-  });
-  userProfile.password = bcrypt.hashSync(userProfile.password, 8);
+  // const foundRole = await Role.findAll({
+  //   where: {
+  //     id: role,
+  //   },
+  // });
+  userProfile.password = bcrypt.hashSync(defaultPassword, 8);
   // Create the user within the Transaction
-  const user = await User.create({ ...userProfile, email, username, roleId: foundRole.id });
+  const user = await User.create({ ...userProfile, email, username, isEmailVerified: true });
   // eslint-disable-next-line radix
   // const parseSchholId = parseInt(school_id);
 
   await user.setSchoool_students(school_id);
   // Set the user role
-  await user.setRoles(foundRole);
+  // await user.setRoles(foundRole);
   // set the users to their class
   await ClassUser.create({ studentId: user.id, classId: class_id });
   // Set the user role within the transaction
-  await user.setRoles(foundRole);
+  // await user.setRoles(foundRole);
 
   // Return user object with role
   return getUserById(user.id);
 };
 const employeeRegistration = async (userBody) => {
+  const defaultPassword = 'password';
   // eslint-disable-next-line camelcase
-  const { userType, role, school_id, ...userProfile } = userBody;
+  const { userType, school_id, ...userProfile } = userBody;
   await getSchoolById(school_id); // Check that the school exists
   const email = generateUniqueEmail(userBody.firstname, userBody.lastname, userBody.othername);
   const username = generateUniqueUsername(userBody.firstname, userBody.lastname);
@@ -210,18 +229,18 @@ const employeeRegistration = async (userBody) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Username already taken');
   }
   // Get the user role
-  const foundRole = await Role.findAll({
-    where: {
-      id: role,
-    },
-  });
-  userProfile.password = bcrypt.hashSync(userProfile.password, 8);
+  // const foundRole = await Role.findAll({
+  //   where: {
+  //     id: role,
+  //   },
+  // });
+  userProfile.password = bcrypt.hashSync(defaultPassword, 8);
   // Create the user within the Transaction
-  const user = await User.create({ ...userProfile, email, username, roleId: foundRole.id });
+  const user = await User.create({ ...userProfile, email, username, isEmailVerified: true });
   // eslint-disable-next-line radix
   await user.setSchool_employees(school_id);
   // Set the user role
-  await user.setRoles(foundRole);
+  // await user.setRoles(foundRole);
   // Return user object with role
   return getUserById(user.id);
 };
@@ -234,24 +253,37 @@ const createManyStudents = async (file) => {
     throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'You must upload a csv file to continue');
   }
   const uploadedFile = await validateFile(file);
+  const successResults = [];
+  const errorResults = [];
   await Promise.all(
     uploadedFile.map(async (user) => {
       try {
-        const role = await Role.findOne({ where: { name: user.role } });
+        const role = await Role.findOne({ where: { name: 'student' } });
         const createdUser = await studentRegistration(user); // Call employeeRegistration to handle role setting
         await createdUser.setRoles(role.id);
+        successResults.push(createdUser);
       } catch (error) {
+        // Log the error
         // eslint-disable-next-line no-console
-        console.error('Error creating employee:', error);
-        // Handle the error as needed
+        console.error('Error creating student:', error);
+        // Push error details to errorResults array
+        errorResults.push({ user, error: error.message });
       }
     })
   );
+
+  // If there are errors, throw them to be captured by the error handling middleware
+  if (errorResults.length > 0) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Error creating students', { errors: errorResults });
+  }
+
   return {
     message: 'Multiple users created successfully',
     status: 200,
+    // successResults,
   };
 };
+
 /**
  * creating students in bulk
  */
@@ -260,22 +292,19 @@ const createManyEmployee = async (file) => {
     throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'You must upload a CSV file to continue');
   }
   const uploadedFile = await validateFile2(file);
-
   // Validate school IDs and handle missing schools (as discussed previously)
-
   const userResults = await Promise.all(
     uploadedFile.map(async (user) => {
       try {
         const existingUser = await User.findOne({
           where: { email: user.staff_email }, // Check using email (assuming unique)
         });
-
         if (existingUser) {
           // User already exists, return details
           return { existingUser, message: 'User already exists' };
         }
         // New user, create and set role
-        const role = await Role.findOne({ where: { name: user.role } });
+        const role = await Role.findOne({ where: { name: 'staff' } });
         const createdUser = await employeeRegistration(user);
         await createdUser.setRoles(role.id);
         return createdUser; // Return the created user object
@@ -292,7 +321,6 @@ const createManyEmployee = async (file) => {
   const existingUsers = userResults.filter((result) => result.existingUser);
   const createdUsers = userResults.filter((result) => result.createdUser);
   const errors = userResults.filter((result) => result.error);
-
   // ... (return details about created and existing users, handle errors)
   return {
     existingUsers,
@@ -320,6 +348,8 @@ const queryUsers = async (filter, current) => {
     where: {
       firstName: {
         [Op.like]: `%${filter.firstName || ''}%`,
+        [Op.like]: `%${filter.lastName || ''}%`,
+        [Op.like]: `%${filter.username || ''}%`,
       },
       isDeleted: false, // only get users that are not deleted
     },
