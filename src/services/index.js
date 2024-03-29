@@ -10,3 +10,4 @@ module.exports.uploadService = require('./upload.service');
 module.exports.countryService = require('./country.service');
 module.exports.schoolService = require('./school.service');
 module.exports.classService = require('./class.service');
+module.exports.classAttendanceService = require('./class_attendance.service');

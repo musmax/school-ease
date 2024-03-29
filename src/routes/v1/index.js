@@ -11,6 +11,7 @@ const uploadRoute = require('./upload.route');
 const countryRoute = require('./country.route');
 const schoolRoute = require('./school.route');
 const classRoute = require('./class.route');
+const classAttendanceRoute = require('./class_attendance.route');
 
 const router = express.Router();
 
@@ -54,6 +55,10 @@ const defaultRoutes = [
   {
     path: '/class',
     route: classRoute,
+  },
+  {
+    path: '/class-attendance',
+    route: classAttendanceRoute,
   },
 ];
 
