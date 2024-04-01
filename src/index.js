@@ -16,6 +16,9 @@ try {
   association();
 
   // sync database
+  // ClassAttendance.sync({
+  //   alter: true,
+  // });
   // intit DB
   sequelize
     .sync({

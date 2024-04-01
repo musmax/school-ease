@@ -8,16 +8,13 @@ const router = express.Router();
 
 router
   .route('/')
-  // .get(auth('classAttendances.view'), classAttendanceController.getclassAttendances)
-  .post(auth(), validate(classAttendanceValidation.markAttendance), classAttendanceController.markAttendance);
+  .post(auth(), validate(classAttendanceValidation.markAttendance), classAttendanceController.markAttendance)
+  .get(auth(), classAttendanceController.queryClassAttendance);
 
-// router
-//   .route('/:id')
-//   .get(
-//     validate(classAttendanceValidation.getclassAttendance),
-//     auth('classAttendances.view'),
-//     classAttendanceController.getclassAttendanceById
-//   );
+router
+  .route('/:id')
+  .get(auth(), classAttendanceController.getAttendance)
+  .patch(auth(), classAttendanceController.updateAttendance);
 
 module.exports = router;
 
@@ -32,17 +29,57 @@ module.exports = router;
  * @swagger
  * /class-attendance:
  *   get:
- *     summary: Get all Class-Attendances
- *     description: Only admins can retrieve all Class-Attendances.
+ *     summary: Query attendance
+ *     description: Only staff with permission can perform this action
  *     tags: [Class-Attendance]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *      - in: query
- *        name: name
- *        schema:
- *          type: string
- *          description: Class-Attendance name
+ *       - in: query
+ *         name: schoolId
+ *         schema:
+ *           type: number
+ *           required: true
+ *         description: schoolId
+ *       - in: query
+ *         name: teacherId
+ *         schema:
+ *           type: number
+ *         description: teacherId
+ *       - in: query
+ *         name: studentId
+ *         schema:
+ *           type: number
+ *         description: studentId
+ *       - in: query
+ *         name: classId
+ *         schema:
+ *           type: number
+ *           required: true
+ *         description: classId
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *         description: Start date (date created) in the form of YYYY-MM-DD
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *         description: End date (date created) in the form of YYYY-MM-DD
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: page number
+ *         default: 1
+ *       - in: query
+ *         name: paginate
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         default: 25
+ *         description: Maximum number of records per page
  *     responses:
  *       "200":
  *         description: OK
@@ -88,39 +125,6 @@ module.exports = router;
  *                   example: cities created successfully
  *                 data:
  *                   $ref: '#/components/schemas/ClassAttendance'
- */
-
-/**
- * @swagger
- * /Class-Attendance/me:
- *   get:
- *     summary: Get all my Class-Attendances
- *     description: Only admins can retrieve all Class-Attendances.
- *     tags: [Class-Attendance]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *      - in: query
- *        name: name
- *        schema:
- *          type: string
- *          description: Class-Attendance name
- *     responses:
- *       "200":
- *         description: OK
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 results:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Class-AttendanceList'
- *       "401":
- *         $ref: '#/components/responses/Unauthorized'
- *       "403":
- *         $ref: '#/components/responses/Forbidden'
  */
 
 /**
@@ -174,7 +178,7 @@ module.exports = router;
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Class-Attendance'
+ *             $ref: '#/components/schemas/UpdateAttendance'
  *             example:
  *               name: lastName
  *     responses:
@@ -183,7 +187,7 @@ module.exports = router;
  *         content:
  *           application/json:
  *             schema:
- *                $ref: '#/components/schemas/Class-Attendance'
+ *                $ref: '#/components/schemas/UpdateAttendance'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":
@@ -213,4 +217,70 @@ module.exports = router;
  *         $ref: '#/components/responses/Forbidden'
  *       "404":
  *         $ref: '#/components/responses/NotFound'
+ */
+
+/**
+ * @swagger
+ * /subscriptions/transaction-history:
+ *   get:
+ *     summary: Get all subscriptions transaction history
+ *     description: Only Admin can get list of subscriptions transaction history.
+ *     tags: [Subscription]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: subscriptionPlanId
+ *         schema:
+ *           type: number
+ *         description: subscriptionPlanId
+ *       - in: query
+ *         name: userId
+ *         schema:
+ *           type: number
+ *         description: userId
+ *       - in: query
+ *         name: companyId
+ *         schema:
+ *           type: number
+ *         description: companyId
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *         description: Start date (date created) in the form of YYYY-MM-DD
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *         description: End date (date created) in the form of YYYY-MM-DD
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: page number
+ *         default: 1
+ *       - in: query
+ *         name: paginate
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         default: 25
+ *         description: Maximum number of records per page
+ *     responses:
+ *       "200":
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Categories fetched successfully
+ *                 data:
+ *                   $ref: '#/components/schemas/SubscriptionPlans'
  */

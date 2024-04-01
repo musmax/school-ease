@@ -11,6 +11,10 @@ const { SchoolClass } = require('./class.model');
 const { ClassUser } = require('./class_user.model');
 const { SchoolEmployee } = require('./school_employee.model');
 const { ClassAttendance } = require('./attendance.model');
+const { SchoolSession } = require('./school_session.model');
+const { SchoolSessionTerm } = require('./school_session_term.model');
+const { SchoolTermActivity } = require('./school_term_activities.model');
+const { SchoolTermBreak } = require('./school_term_break.model');
 
 exports.association = () => {
   // User - Token
@@ -76,6 +80,21 @@ exports.association = () => {
   SchoolClass.hasMany(ClassAttendance, { foreignKey: 'classId', as: 'attendance_class' });
   ClassAttendance.belongsTo(SchoolClass, { foreignKey: 'classId', as: 'attendance_class' });
 
+  School.hasOne(ClassAttendance, { foreignKey: 'schoolId', as: 'school_class' });
+  ClassAttendance.belongsTo(School, { foreignKey: 'schoolId', as: 'school_class' });
+
   User.hasMany(ClassAttendance, { foreignKey: 'standInMarker', as: 'stand_in_marker' });
   ClassAttendance.belongsTo(User, { foreignKey: 'standInMarker', as: 'stand_in_marker' });
+
+  School.hasOne(SchoolSession, { foreignKey: 'schoolId', as: 'school_session' });
+  SchoolSession.belongsTo(School, { foreignKey: 'schoolId', as: 'school_session' });
+
+  SchoolSession.hasMany(SchoolSessionTerm, { foreignKey: 'termId', as: 'school_session_terms' });
+  SchoolSessionTerm.belongsTo(SchoolSession, { foreignKey: 'termId', as: 'school_session_terms' });
+
+  SchoolSessionTerm.hasMany(SchoolTermActivity, { foreignKey: 'activityId', as: 'school_term_activities' });
+  SchoolTermActivity.belongsTo(SchoolSessionTerm, { foreignKey: 'activityId', as: 'school_term_activities' });
+
+  SchoolSessionTerm.hasMany(SchoolTermBreak, { foreignKey: 'breakId', as: 'school_term_breaks' });
+  SchoolTermBreak.belongsTo(SchoolSessionTerm, { foreignKey: 'breakId', as: 'school_term_breaks' });
 };
