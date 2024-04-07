@@ -17,12 +17,13 @@ const SchoolSessionTerm = sequelize.define('school_session_term', {
     defaultValue: true,
   },
   startDate: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true,
+    type: DataTypes.DATE,
   },
   endDate: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true,
+    type: DataTypes.DATE,
+  },
+  schoolId: {
+    type: DataTypes.INTEGER,
   },
 });
 

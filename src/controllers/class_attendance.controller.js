@@ -39,15 +39,15 @@ const updateAttendance = catchAsync(async (req, res) => {
   });
 });
 const createSession = catchAsync(async (req, res) => {
-  await classAttendanceService.createSession(req.body);
+  const data = await classAttendanceService.createSession(req.body);
   res.status(httpStatus.OK).send({
     success: true,
     message: 'School sessions created successfully',
+    data,
   });
 });
-
 const querySchoolSession = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['schoolId']);
+  const filter = pick(req.query, ['schoolId', 'title', 'isActive']);
   const options = pick(req.query, ['paginate', 'page']);
   const result = await classAttendanceService.querySchoolSession(filter, options);
   res.send({
@@ -89,7 +89,7 @@ const createSessionTerm = catchAsync(async (req, res) => {
 });
 
 const querySessionTerm = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['sessionId']);
+  const filter = pick(req.query, ['sessionId', 'title', 'startDate', 'endDate', 'isActive']);
   const options = pick(req.query, ['paginate', 'page']);
   const result = await classAttendanceService.querySessionTerm(filter, options);
   res.send({

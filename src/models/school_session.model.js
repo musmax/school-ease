@@ -14,7 +14,7 @@ const SchoolSession = sequelize.define('school_session', {
   },
   isActive: {
     type: DataTypes.BOOLEAN,
-    allowNull: true,
+    defaultValue: true,
   },
 });
 

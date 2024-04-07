@@ -9,6 +9,7 @@ const { School } = require('../models/school.model');
 const { SchoolSessionTerm } = require('../models/school_session_term.model');
 const { SchoolTermBreak } = require('../models/school_term_break.model');
 const { SchoolTermActivity } = require('../models/school_term_activities.model');
+const { getUserById } = require('./user.service');
 
 /**
  * @typedef {Object} AttendanceObject
@@ -21,7 +22,37 @@ const { SchoolTermActivity } = require('../models/school_term_activities.model')
  */
 
 /**
- * Instantiate a new company
+ * Calculate attendance percentage for a student
+ * @property {number} studentId
+ * @property {} sessionId
+ * @property {number} termId
+ * @property {number} classId
+ * @returns {Object<Promise}
+ */
+const calculateAttendancePercentage = async (termId, studentId) => {
+  const term = await SchoolSessionTerm.findByPk(termId);
+  const student = await getUserById(studentId);
+  // lets get the total days the school has for the term
+  const schoolTotalDays = (term.endDate - term.startDate) / (1000 * 24 * 60 * 60);
+  const schoolAbsentialDays = await SchoolTermBreak.findAll({ where: { termId } });
+  const totalDaysForTerm = schoolTotalDays - schoolAbsentialDays.length;
+  const presentDays = await ClassAttendance.count({ where: { isPresent: true, studentId } });
+  const absentDays = await ClassAttendance.count({ where: { isPresent: false, studentId } });
+  const attendancePercentage = (presentDays / totalDaysForTerm) * 100;
+  return {
+    record: {
+      studentAttendancePercentage: attendancePercentage,
+      totalPresentDays: presentDays,
+      totalAbsentDays: absentDays,
+      schoolTotalDaysForTerm: totalDaysForTerm,
+      studentId: student.id,
+      TotalTermDays: schoolTotalDays,
+    },
+  };
+};
+
+/**
+ * Mark attendance
  * @param {Object} AttendanceBody
  * @param {number} AttendanceBody.teacherId
  * @param {number} AttendanceBody.studentId
@@ -30,14 +61,35 @@ const { SchoolTermActivity } = require('../models/school_term_activities.model')
  * @returns {Promise<CompanyObject>}
  */
 const markAttendance = async (AttendanceBody) => {
-  const { dateOfMarking, studentRecords, teacherId, classId, standInMarker } = AttendanceBody;
+  const { dateOfMarking, studentRecords, teacherId, classId, standInMarker, sessionId, termId } = AttendanceBody;
   const existingClass = await SchoolClass.findByPk(classId);
+  if (!existingClass) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Class not found');
+  }
+  const session = await SchoolSession.findOne({ where: { id: sessionId, isActive: true } });
+  if (!session) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'session not found');
+  }
+  const term = await SchoolSessionTerm.findOne({ where: { id: termId, isActive: true } });
+  if (!term) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Term not found');
+  }
   // Ensure that the class teacher is assigned to this class
   const validateTeacher = await ClassUser.findOne({ where: { classId, teacherId } });
   if (!validateTeacher) {
     throw new ApiError(httpStatus.NOT_FOUND, 'This teacher is not assigned to this class');
   }
-  // To Do: preventing of marking attendance for a student not in a particular class
+  //  preventing of marking attendance for a student not in a particular class
+  const allStudentsInClass = await ClassUser.findAll({ where: { classId, teacherId: { [Op.eq]: null } } });
+  const studentsIds = allStudentsInClass.map((student) => student.studentId);
+  const incomingStudentIds = studentRecords.map((student) => student.studentId);
+  // eslint-disable-next-line no-restricted-syntax
+  for (const studentId of incomingStudentIds) {
+    if (!studentsIds.includes(studentId)) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'One or more students do not belong to this class');
+    }
+  }
+
   // Check if attendance has already been marked for the given date
   const existingRecords = await ClassAttendance.findAll({ where: { dateOfMarking } });
   const newRecord = studentRecords.flatMap((record) => record.studentId);
@@ -61,6 +113,8 @@ const markAttendance = async (AttendanceBody) => {
       schoolId: existingClass.schoolId,
       studentId: record.studentId,
       isPresent: record.isPresent,
+      sessionId,
+      termId,
     });
   });
   await Promise.all(promisesArray);
@@ -115,7 +169,12 @@ const queryClassAttendance = async (filter, current) => {
  * get attendance for a particular student
  */
 const getAttendance = async (id) => {
-  return ClassAttendance.findByPk(id);
+  const attendance = await ClassAttendance.findByPk(id);
+  const stats = await calculateAttendancePercentage(attendance.termId, attendance.studentId);
+  return {
+    attendance,
+    stats,
+  };
 };
 
 /**
@@ -138,7 +197,7 @@ const createSession = async (body) => {
   if (!schoolExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'School not found');
   }
-  const sessionRecord = await SchoolSession.create({ body, schoolId });
+  const sessionRecord = await SchoolSession.create({ ...body, schoolId: schoolExist.id });
   return sessionRecord;
 };
 
@@ -147,7 +206,7 @@ const createSession = async (body) => {
  */
 const getSession = async (id) => {
   const session = await SchoolSession.findOne({
-    where: { id },
+    where: { id, isActive: true },
     include: [
       {
         association: 'school_session_terms',
@@ -173,13 +232,15 @@ const getSession = async (id) => {
  * get all sessions for your school
  */
 const querySchoolSession = async (filter, current) => {
-  const { schoolId } = filter;
+  const { schoolId, name, isActive } = filter;
   const options = {
     page: current.page,
     paginate: current.limit,
-    attributes: ['id', 'isPresent', 'dateOfMarking'],
     where: {
+      // isActive: false,
       ...(schoolId && { schoolId: { [Op.like]: `%${schoolId}%` } }),
+      ...(name && { name: { [Op.like]: `%${name}%` } }),
+      ...(isActive && { isActive: { [Op.like]: `%${isActive}%` } }),
     },
   };
   // Ensure that paginate is not included in the where clause
@@ -224,17 +285,31 @@ const deactivateSession = async (id) => {
  * create a session term
  */
 const createSessionTerm = async (body) => {
-  const { sessionId, schoolBreak, schoolActivity } = body;
+  const { sessionId, schoolBreak, schoolId, schoolActivity, ...others } = body;
   // lets get the session
-  const session = await getSession(sessionId);
-  const term = SchoolSessionTerm.create({ ...body, sessionId: session.id });
-  if (schoolBreak) {
-    await Promise.all(schoolBreak.map((item) => SchoolTermBreak.create({ ...item, termId: term.id })));
+  const session = await SchoolSession.findByPk(sessionId);
+  if (!session) {
+    throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'Session not found');
   }
-  if (schoolActivity) {
-    await Promise.all(schoolActivity.map((item) => SchoolTermActivity.create({ ...item, termId: term.id })));
+  if (!session.isActive) {
+    throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'Session no longer active. contact superior officers for next action');
   }
-  return term;
+  // lets ensure that that school doesnt have active term already
+  const schoolTerm = await SchoolSessionTerm.findOne({
+    where: { schoolId, sessionId, isActive: true },
+    order: [['createdAt', 'DESC']],
+  });
+  if (!schoolTerm) {
+    const term = await SchoolSessionTerm.create({ ...others, sessionId: session.id, schoolId });
+    if (schoolBreak) {
+      await Promise.all(schoolBreak.map((item) => SchoolTermBreak.create({ ...item, termId: term.id })));
+    }
+    if (schoolActivity) {
+      await Promise.all(schoolActivity.map((item) => SchoolTermActivity.create({ ...item, termId: term.id })));
+    }
+    return term;
+  }
+  throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'A term is still active for your school');
 };
 
 /**
@@ -245,7 +320,6 @@ const querySessionTerm = async (filter, current) => {
   const options = {
     page: current.page,
     paginate: current.limit,
-    attributes: ['id', 'isPresent', 'dateOfMarking'],
     where: {
       ...(sessionId && { sessionId: { [Op.like]: `%${sessionId}%` } }),
       ...(title && { title: { [Op.like]: `%${title}%` } }),
@@ -285,6 +359,7 @@ const fetchtermById = async (id) => {
   if (!term) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Term not found');
   }
+  return term;
 };
 
 /**
@@ -382,10 +457,12 @@ const deleteTermActivity = async (id) => {
  * create a session term break for a school
  */
 const createTermBreak = async (body) => {
-  const { termId } = body;
+  const { termId, ...others } = body;
   const termExist = await fetchtermById(termId);
   // create the term activity
-  return SchoolTermBreak.create({ ...body, termId: termExist.id });
+  const schoolBreak = SchoolTermBreak.create({ ...others, termId: termExist.id });
+  // console.log(schoolBreak);
+  return schoolBreak;
 };
 
 /**
@@ -450,6 +527,7 @@ const deleteTermBreak = async (id) => {
   await recordExist.destroy();
   return recordExist;
 };
+
 module.exports = {
   queryClassAttendance,
   markAttendance,

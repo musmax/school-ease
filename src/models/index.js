@@ -80,21 +80,27 @@ exports.association = () => {
   SchoolClass.hasMany(ClassAttendance, { foreignKey: 'classId', as: 'attendance_class' });
   ClassAttendance.belongsTo(SchoolClass, { foreignKey: 'classId', as: 'attendance_class' });
 
-  School.hasOne(ClassAttendance, { foreignKey: 'schoolId', as: 'school_class' });
+  School.hasMany(ClassAttendance, { foreignKey: 'schoolId', as: 'school_class' });
   ClassAttendance.belongsTo(School, { foreignKey: 'schoolId', as: 'school_class' });
+
+  SchoolSession.hasMany(ClassAttendance, { foreignKey: 'sessionId', as: 'session_attendance' });
+  ClassAttendance.belongsTo(SchoolSession, { foreignKey: 'sessionId', as: 'session_attendance' });
+
+  SchoolSessionTerm.hasMany(ClassAttendance, { foreignKey: 'termId', as: 'term_attendance' });
+  ClassAttendance.belongsTo(SchoolSessionTerm, { foreignKey: 'termId', as: 'term_attendance' });
 
   User.hasMany(ClassAttendance, { foreignKey: 'standInMarker', as: 'stand_in_marker' });
   ClassAttendance.belongsTo(User, { foreignKey: 'standInMarker', as: 'stand_in_marker' });
 
-  School.hasOne(SchoolSession, { foreignKey: 'schoolId', as: 'school_session' });
+  School.hasMany(SchoolSession, { foreignKey: 'schoolId', as: 'school_session' });
   SchoolSession.belongsTo(School, { foreignKey: 'schoolId', as: 'school_session' });
 
-  SchoolSession.hasMany(SchoolSessionTerm, { foreignKey: 'termId', as: 'school_session_terms' });
-  SchoolSessionTerm.belongsTo(SchoolSession, { foreignKey: 'termId', as: 'school_session_terms' });
+  SchoolSession.hasMany(SchoolSessionTerm, { foreignKey: 'sessionId', as: 'school_session_terms' });
+  SchoolSessionTerm.belongsTo(SchoolSession, { foreignKey: 'sessionId', as: 'school_session_terms' });
 
-  SchoolSessionTerm.hasMany(SchoolTermActivity, { foreignKey: 'activityId', as: 'school_term_activities' });
-  SchoolTermActivity.belongsTo(SchoolSessionTerm, { foreignKey: 'activityId', as: 'school_term_activities' });
+  SchoolSessionTerm.hasMany(SchoolTermActivity, { foreignKey: 'termId', as: 'school_term_activities' });
+  SchoolTermActivity.belongsTo(SchoolSessionTerm, { foreignKey: 'termId', as: 'school_term_activities' });
 
-  SchoolSessionTerm.hasMany(SchoolTermBreak, { foreignKey: 'breakId', as: 'school_term_breaks' });
-  SchoolTermBreak.belongsTo(SchoolSessionTerm, { foreignKey: 'breakId', as: 'school_term_breaks' });
+  SchoolSessionTerm.hasMany(SchoolTermBreak, { foreignKey: 'termId', as: 'school_term_breaks' });
+  SchoolTermBreak.belongsTo(SchoolSessionTerm, { foreignKey: 'termId', as: 'school_term_breaks' });
 };

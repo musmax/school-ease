@@ -3,21 +3,25 @@ const Joi = require('joi');
 const markAttendance = {
   body: Joi.object().keys({
     teacherId: Joi.number().required(),
+    sessionId: Joi.number().required(),
+    termId: Joi.number().required(),
     classId: Joi.number().required(),
     dateOfMarking: Joi.date().required(),
     standInMarker: Joi.number(),
-    studentRecords: Joi.array().items(
-      Joi.object().keys({
-        studentId: Joi.number(),
-        isPresent: Joi.boolean().required(),
-      })
-    ),
+    studentRecords: Joi.array()
+      .items(
+        Joi.object().keys({
+          studentId: Joi.number().required(),
+          isPresent: Joi.boolean().required(),
+        })
+      )
+      .required(),
   }),
 };
 
 const createSession = {
   body: Joi.object().keys({
-    name: Joi.string().required(),
+    title: Joi.string().required(),
     description: Joi.string().required(),
     schoolId: Joi.number().required(),
   }),
@@ -54,6 +58,7 @@ const createSessionTerm = {
       title: Joi.string().required(),
       description: Joi.string(),
       sessionId: Joi.number().required(),
+      schoolId: Joi.number().required(),
       startDate: Joi.date().required().less(Joi.ref('endDate')), // Ensure startDate is less than endDate
       endDate: Joi.date().required(),
       schoolBreak: Joi.array().items(
