@@ -5,7 +5,7 @@ const { classService } = require('../services');
 const pick = require('../utils/pick');
 
 const fetchAllClasses = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['schoolId', 'createdBy']);
+  const filter = pick(req.query, ['schoolId']);
   const options = pick(req.query, ['paginate', 'page']);
   const classes = await classService.getAllClasses(filter, options);
   res.status(httpStatus.OK).send({

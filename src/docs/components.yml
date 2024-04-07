@@ -278,6 +278,8 @@ components:
       example:
         dateOfMarking: '2024-03-19T12:15:08'
         classId: 1
+        sessionId: 1
+        termId: 1
         teacherId: 1
         standInMarker: 1
         studentRecords:
@@ -285,7 +287,242 @@ components:
             isPresent: false
           - studentId: 2
             isPresent: true
+    Class-AttendanceList:
+      type: array
+      items:
+        $ref: '#/components/schemas/ClassAttendance'
 
+    UpdateAttendance:
+      type: object
+      properties:
+        name:
+          type: string
+          required: true
+        code:
+          type: string
+          required: true
+      example:
+        isPresent: false
+
+    SchoolSession:
+      type: object
+      properties:
+        title:
+          type: string
+          required: true
+        description:
+          type: string
+          required: true
+        schoolId:
+          type: number
+          required: false
+
+      example:
+        title: '2020/2021  Academic Year'
+        description: 'The academic year for the 2020/2021 session.This session will run from Sep 2020 - Oct 2021'
+        schoolId: 3
+
+    SchoolSessionList:
+      type: array
+      items:
+        $ref: '#/components/schemas/SchoolSession'
+
+    UpdateSchoolSession:
+      type: object
+      properties:
+        title:
+          type: string
+          required: true
+        description:
+          type: string
+          required: true
+      example:
+        title: '2020/2021  Academic Year'
+        description: 'The academic year for the 2020/2021 session.This session will run from Sep 2020 - Oct 2021.'
+
+    SchoolTerm:
+      type: object
+      properties:
+        startDate:
+          type: string
+          format: date-time
+          required: true
+        endDate:
+          type: string
+          format: date-time
+          required: true
+        title:
+          type: string
+        description:
+          type: string
+        sessionId:
+          type: number
+          required: true
+        schoolActivity:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              description:
+                type: string
+              date:
+                type: string
+                format: date-time
+        schoolBreak:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              description:
+                type: string
+              date:
+                type: string
+                format: date-time
+      example:
+        sessionId: 1
+        schoolId: 1
+        title: 'first term'
+        description: 'This is the first term of the academic year. It starts on January and ends in March 2021.'
+        startDate: '2024-03-19T12:15:08.000Z'
+        endDate: '2024-03-19T12:15:08.000Z'
+        schoolActivity:
+          - title: "Excursion"
+            description: "We are to go to Obudu cattle ranch for an excursion."
+            date: "2024-03-19T12:15:08.765Z"
+          - title: "Inspection"
+            description: "This is a routine inspection of the classroom."
+            date: "2024-03-19T12:15:08.765Z"
+          - title: "Teacher meeting"
+            description: "The teacher will meet with the students and their parents to discuss the semester results."
+            date: "2024-03-19T12:15:08.765Z"
+        schoolBreak:
+          - title: "Easter Break"
+            description: "This holiday marks the birth of Christ."
+            date: "2024-03-19T12:15:08.765Z"
+          - title: "Easter Break continues"
+            description: "This holiday marks the birth of Christ."
+            date: "2024-03-20T12:15:08.765Z"
+          - title: "Teacher Day"
+            description: "A day dedicated to teachers in our school, we appreciate your hard work and dedication."
+            date: "2024-03-19T12:15:08.765Z"
+
+    SchoolTermList:
+      type: array
+      items:
+        $ref: '#/components/schemas/SchoolTerm'
+
+    UpdateSchoolTerm:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+      example:
+        title: 'Spring Term'
+        description: 'The spring term begins on March 1st and ends on June 30th.'
+        startDate: '2024-03-01T00:00:00.000Z'
+        endDate: '2024-06-30T23:59:59.999Z'
+
+    TermActivity:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+          required: true
+        title:
+          type: string
+          required: true
+        description:
+          type: string
+          required: true
+        termId:
+          type: number
+          required: true
+      example:
+        date: '2024-03-19T12:15:08Z'
+        termId: 1
+        title: 'Excursion II'
+        description: 'We are to visit Olumo rock in Abeokuta.'
+
+    TermActivityList:
+      type: array
+      items:
+        $ref: '#/components/schemas/TermActivity'
+
+    UpdateTermActivity:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+          format: date-time
+        status:
+          type: string
+      example:
+        title: 'Visitation to Government House, Agodi'
+        description: "This is a brief of the activity."
+        date: '2024-06-17T12:15:08Z'
+        status: 'postponed'
+
+    TermBreak:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+          required: true
+        title:
+          type: string
+          required: true
+        description:
+          type: string
+          required: true
+        termId:
+          type: string
+          required: true
+      example:
+        date: '2024-03-19T12:15:08Z'
+        termId: 1
+        title: 'Maolud Nabiyy'
+        description: 'This is a global holiday observed by Muslims.'
+
+    TermBreakList:
+      type: array
+      items:
+        $ref: '#/components/schemas/TermBreak'
+
+    UpdateTermBreak:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+          format: date-time
+        status:
+          type: string
+      example:
+        title: 'Eid -al-kabir'
+        description: "This is a globally observed holiday by Muslims to mark the big festival."
+        date: '2024-06-17T12:15:08Z'
+        status: 'observed'
 
     TestInvitation:
       type: object

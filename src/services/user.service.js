@@ -63,7 +63,11 @@ const isPasswordMatch = async function (password, user) {
  */
 const getUserById = async (id) => {
   return User.findByPk(id, {
+    attributes: { exclude: ['password'] },
     include: [
+      {
+        association: 'school_owner',
+      },
       {
         association: 'class_students',
         attributes: ['id'],
@@ -96,6 +100,9 @@ const getUserById = async (id) => {
             through: { attributes: [] },
           },
         ],
+      },
+      {
+        association: 'student_attendance',
       },
     ],
   });
