@@ -10,6 +10,7 @@ const { SchoolSessionTerm } = require('../models/school_session_term.model');
 const { SchoolTermBreak } = require('../models/school_term_break.model');
 const { SchoolTermActivity } = require('../models/school_term_activities.model');
 const { getUserById } = require('./user.service');
+const { StaffAttendance } = require('../models/staff_attendance.model');
 
 /**
  * @typedef {Object} AttendanceObject
@@ -528,6 +529,57 @@ const deleteTermBreak = async (id) => {
   return recordExist;
 };
 
+/**
+ * Mark attendance
+ * @param {Object} AttendanceBody
+ * @param {number} AttendanceBody.teacherId
+ * @param {number} AttendanceBody.studentId
+ * @param {number} AttendanceBody.classId
+ * @param {date} AttendanceBody.dateOfMarking
+ * @returns {Promise<CompanyObject>}
+ */
+const markStaffAttendance = async (AttendanceBody) => {
+  const { dateOfMarking, staffRecords, sessionId, termId } = AttendanceBody;
+  const session = await SchoolSession.findOne({ where: { id: sessionId, isActive: true } });
+  if (!session) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'session not found');
+  }
+  const term = await SchoolSessionTerm.findOne({ where: { id: termId, isActive: true } });
+  if (!term) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Term not found');
+  }
+  // Check if attendance has already been marked for the given date
+  const existingRecords = await StaffAttendance.findAll({ where: { dateOfMarking } });
+  const newRecord = staffRecords.flatMap((record) => record.staffId);
+  if (existingRecords.length === newRecord.length) {
+    throw new ApiError(
+      httpStatus.NOT_ACCEPTABLE,
+      'You already mark attendance for this set of staff for this particular day'
+    );
+  }
+  const existingStudentIds = new Set(existingRecords.map((record) => record.staffId));
+  // Filter out student records that don't already have an attendance record for the given date
+  const newStudentRecords = staffRecords.filter((record) => !existingStudentIds.has(record.staffId));
+  // Create attendance records for new staff records
+  const promisesArray = newStudentRecords.map(async (record) => {
+    // Create the attendance
+    await StaffAttendance.create({
+      dateOfMarking,
+      arrivalTime: record.arrivalTime,
+      staffId: record.staffId,
+      isPresent: record.isPresent,
+      schoolId: session.schoolId,
+      sessionId,
+      termId,
+    });
+  });
+  await Promise.all(promisesArray);
+  return {
+    message: 'Attendance marked successfully',
+    status: httpStatus.OK,
+  };
+};
+
 module.exports = {
   queryClassAttendance,
   markAttendance,
@@ -553,4 +605,5 @@ module.exports = {
   querySessionTerm,
   querySchoolTermActivity,
   querySchoolTermBreak,
+  markStaffAttendance,
 };

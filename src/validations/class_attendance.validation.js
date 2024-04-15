@@ -18,6 +18,24 @@ const markAttendance = {
       .required(),
   }),
 };
+const markStaffAttendance = {
+  body: Joi.object().keys({
+    sessionId: Joi.number().required(),
+    termId: Joi.number().required(),
+    dateOfMarking: Joi.date().required(),
+    staffRecords: Joi.array()
+      .items(
+        Joi.object().keys({
+          staffId: Joi.number().required(),
+          isPresent: Joi.boolean().required(),
+          arrivalTime: Joi.string()
+            .regex(/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/) // Regular expression to match HH:MM:SS format
+            .required(),
+        })
+      )
+      .required(),
+  }),
+};
 
 const createSession = {
   body: Joi.object().keys({
@@ -185,4 +203,5 @@ module.exports = {
   deleteTermBreak,
   deactivateSession,
   deactivateTerm,
+  markStaffAttendance,
 };
