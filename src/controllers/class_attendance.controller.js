@@ -10,6 +10,13 @@ const markAttendance = catchAsync(async (req, res) => {
     message: 'Attendance marked successfully',
   });
 });
+const markStaffAttendance = catchAsync(async (req, res) => {
+  await classAttendanceService.markStaffAttendance(req.body);
+  res.status(httpStatus.OK).send({
+    success: true,
+    message: 'Attendance marked successfully',
+  });
+});
 
 const queryClassAttendance = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['startDate', 'endDate', 'classId', 'studentId', 'teacherId', 'schoolId']);
@@ -232,4 +239,5 @@ module.exports = {
   querySessionTerm,
   querySchoolTermActivity,
   querySchoolTermBreak,
+  markStaffAttendance,
 };

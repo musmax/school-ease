@@ -257,7 +257,7 @@ const employeeRegistration = async (userBody) => {
  */
 const createManyStudents = async (file) => {
   if (!file) {
-    throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'You must upload a csv file to continue');
+    throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'You must upload a csv file to continue this action');
   }
   const uploadedFile = await validateFile(file);
   const successResults = [];

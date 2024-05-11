@@ -12,6 +12,7 @@ const countryRoute = require('./country.route');
 const schoolRoute = require('./school.route');
 const classRoute = require('./class.route');
 const classAttendanceRoute = require('./class_attendance.route');
+const staffAttendanceRoute = require('./staff_attendance.route');
 
 const router = express.Router();
 
@@ -59,6 +60,10 @@ const defaultRoutes = [
   {
     path: '/class-attendance',
     route: classAttendanceRoute,
+  },
+  {
+    path: '/staff-attendance',
+    route: staffAttendanceRoute,
   },
 ];
 

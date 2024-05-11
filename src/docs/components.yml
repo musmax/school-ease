@@ -250,6 +250,61 @@ components:
         classId: 1
         classCaptainId: 1
 
+    StaffAttendance:
+      type: object
+      properties:
+        dateOfMarking:
+          type: string
+          format: date-time
+          required: true
+        classId:
+          type: number
+          required: true
+        teacherId:
+          type: number
+          required: true
+        standInMarker:
+          type: number
+          required: false
+        studentRecords:
+          type: array
+          items:
+            type: object
+            properties:
+              studentId:
+                type: number
+              isPresent:
+                type: boolean
+      example:
+        dateOfMarking: '2024-03-19T12:15:08'
+        sessionId: 1
+        termId: 1
+        staffRecords:
+          - staffId: 1
+            isPresent: false
+            arrivalTime: '12:15:08'
+          - staffId: 2
+            isPresent: true
+            arrivalTime: '12:15:08'
+
+    StaffAttendanceList:
+      type: array
+      items:
+        $ref: '#/components/schemas/StaffAttendance'
+
+    UpdateStaffAttendance:
+      type: object
+      properties:
+        name:
+          type: string
+          required: true
+        code:
+          type: string
+          required: true
+      example:
+        isPresent: false
+        arrivalTime: '08:15:08'
+
     ClassAttendance:
       type: object
       properties:

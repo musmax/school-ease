@@ -5,7 +5,6 @@ const logger = require('./config/logger');
 const { sequelize } = require('./config/database');
 const { association } = require('./models');
 const { initializeDatabase } = require('./utils/MockData');
-const { ClassAttendance } = require('./models/attendance.model');
 
 let server;
 
@@ -17,9 +16,9 @@ try {
   association();
 
   // sync database
-  ClassAttendance.sync({
-    // alter: true,
-  });
+  // ClassAttendance.sync({
+  //   // alter: true,
+  // });
   // intit DB
   sequelize
     .sync({
